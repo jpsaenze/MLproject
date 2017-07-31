@@ -1,0 +1,90 @@
+---
+title: "MLProject"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)
+library(randomForest)
+library(tidyverse)
+
+
+```
+
+## Objective
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, the goal is to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. 
+
+More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+
+## Data Preparation
+
+Loading the two data sets we acn readily see that there are a lot of data that might not be used at all for the exercise.
+
+Rows:
+Eliminate all the new_window = yes rows
+Eliminate all the empty columns
+
+The model should not depend on:
+user_name, order, raw_timestamp_part_1,raw_timestamp_part_2, cvtd_timestamp,new_window, num_window
+
+
+```{r data_prep, echo=FALSE, warning=FALSE}
+testing <- suppressMessages(read_csv("~/MLprojecto/pml-testing.csv",))
+training <- suppressMessages(read_csv("~/MLprojecto/pml-training.csv"))
+
+training2 <- filter(training, new_window == "no")
+train_set <- Filter(function(x)!all(is.na(x)), training2)
+test_set <- Filter(function(x)!all(is.na(x)), testing)
+
+train_set <- na.omit(train_set)
+train_set <- select(train_set, -c(X1, user_name, raw_timestamp_part_1, raw_timestamp_part_2, new_window, num_window, cvtd_timestamp))
+test_set <- na.omit(test_set)
+test_set <- select(test_set, -c(X1, user_name, raw_timestamp_part_1, raw_timestamp_part_2, new_window, num_window, cvtd_timestamp))
+```
+
+## Cross-Validation
+
+We use the simple random subsampling of the data to create the training and testing data sets
+80% of the data from the trainning data set will be use for traiinning the moel and the 20% for test crossvalidation.
+
+```{r crossvalidation}
+set.seed(6791)
+inTrain <- createDataPartition(y = train_set$classe, p = 0.8, list = FALSE)
+training <- train_set[inTrain, ]
+testing <- train_set[-inTrain, ]
+```
+
+## Model Selection
+
+Lets try some models for the data and see how do they perform 
+
+```{r model_run, message=FALSE}
+lda_fit <- train(classe ~ ., data = training, method = "lda")
+lda_predict <- predict(lda_fit, newdata=testing)
+lda_cm <- confusionMatrix(lda_predict, testing$classe)$overall
+
+qda_fit <- train(classe ~ ., data = training, method = "qda")
+qda_predict <- predict(qda_fit, newdata=testing)
+qda_cm <- confusionMatrix(qda_predict, testing$classe)$overall
+
+rf_fit <- randomForest(as.factor(classe)~., data=training)
+rf_predict <- predict(rf_fit, newdata=testing)
+rf_cm <- confusionMatrix(rf_predict, testing$classe)$overall
+
+results <- rbind(lda_cm, qda_cm, rf_cm)
+results
+```
+
+## Results
+
+Based on this the Random Forest model has hte best accuracy.
+Lets used it to see the results of the classificatin problem
+
+```{r prediction}
+Final <- predict(rf_fit, newdata=test_set)
+Final
+```
+
