@@ -49,6 +49,7 @@ test_set <- select(test_set, -c(X1, user_name, raw_timestamp_part_1, raw_timesta
 
 We use the simple random subsampling of the data to create the training and testing data sets
 80% of the data from the trainning data set will be use for traiinning the moel and the 20% for test crossvalidation.
+The out of sample error is about the validation data by the predictive values, in this case 
 
 ```{r crossvalidation}
 set.seed(6791)
@@ -60,6 +61,7 @@ testing <- train_set[-inTrain, ]
 ## Model Selection
 
 Lets try some models for the data and see how do they perform 
+before we start the out of sample error about 0.5% given the Validation data set of 3841 samples and 20 values to predict. 
 
 ```{r model_run, message=FALSE}
 lda_fit <- train(classe ~ ., data = training, method = "lda")
@@ -80,7 +82,15 @@ results
 
 ## Results
 
-Based on this the Random Forest model has hte best accuracy.
+Based on this the Random Forest model has the best accuracy.
+The out of sample error in this case was of about 0.3% which is smaller than the estimated one at 0.5%
+
+```{r random_forest_model}
+confusionMatrix(rf_predict, testing$classe)
+```
+
+
+
 Lets used it to see the results of the classificatin problem
 
 ```{r prediction}

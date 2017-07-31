@@ -133,7 +133,7 @@ $(document).ready(function () {
 </div>
 <div id="cross-validation" class="section level2">
 <h2>Cross-Validation</h2>
-<p>We use the simple random subsampling of the data to create the training and testing data sets 80% of the data from the trainning data set will be use for traiinning the moel and the 20% for test crossvalidation.</p>
+<p>We use the simple random subsampling of the data to create the training and testing data sets 80% of the data from the trainning data set will be use for traiinning the moel and the 20% for test crossvalidation. The out of sample error is about the validation data by the predictive values, in this case</p>
 <pre class="r"><code>set.seed(6791)
 inTrain &lt;- createDataPartition(y = train_set$classe, p = 0.8, list = FALSE)
 training &lt;- train_set[inTrain, ]
@@ -141,7 +141,7 @@ testing &lt;- train_set[-inTrain, ]</code></pre>
 </div>
 <div id="model-selection" class="section level2">
 <h2>Model Selection</h2>
-<p>Lets try some models for the data and see how do they perform</p>
+<p>Lets try some models for the data and see how do they perform before we start the out of sample error about 0.5% given the Validation data set of 3841 samples and 20 values to predict.</p>
 <pre class="r"><code>lda_fit &lt;- train(classe ~ ., data = training, method = &quot;lda&quot;)
 lda_predict &lt;- predict(lda_fit, newdata=testing)
 lda_cm &lt;- confusionMatrix(lda_predict, testing$classe)$overall
@@ -167,7 +167,40 @@ results</code></pre>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
-<p>Based on this the Random Forest model has hte best accuracy. Lets used it to see the results of the classificatin problem</p>
+<p>Based on this the Random Forest model has the best accuracy. The out of sample error in this case was of about 0.3% which is smaller than the estimated one at 0.5%</p>
+<pre class="r"><code>confusionMatrix(rf_predict, testing$classe)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1093    2    0    0    0
+##          B    1  740    1    0    0
+##          C    0    1  667    5    0
+##          D    0    0    2  624    0
+##          E    0    0    0    0  705
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.9969          
+##                  95% CI : (0.9945, 0.9984)
+##     No Information Rate : 0.2848          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.996           
+##  Mcnemar's Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            0.9991   0.9960   0.9955   0.9921   1.0000
+## Specificity            0.9993   0.9994   0.9981   0.9994   1.0000
+## Pos Pred Value         0.9982   0.9973   0.9911   0.9968   1.0000
+## Neg Pred Value         0.9996   0.9990   0.9991   0.9984   1.0000
+## Prevalence             0.2848   0.1934   0.1744   0.1638   0.1835
+## Detection Rate         0.2846   0.1927   0.1737   0.1625   0.1835
+## Detection Prevalence   0.2851   0.1932   0.1752   0.1630   0.1835
+## Balanced Accuracy      0.9992   0.9977   0.9968   0.9957   1.0000</code></pre>
+<p>Lets used it to see the results of the classificatin problem</p>
 <pre class="r"><code>Final &lt;- predict(rf_fit, newdata=test_set)
 Final</code></pre>
 <pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
